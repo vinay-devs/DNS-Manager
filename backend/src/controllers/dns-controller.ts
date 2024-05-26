@@ -20,13 +20,13 @@ export const awsInstance = async (userId: string) => {
         }
         const accessKey = decrypt(user.accessKey)
         const secretKey = decrypt(user.secretKey)
-        console.log(accessKey, "secretKey")
+
         AWS.config.update({
             accessKeyId: accessKey,
             secretAccessKey: secretKey,
             region: 'us-east-1'
         });
-        console.log(AWS.config)
+
         try {
             const route53 = new AWS.Route53()
             return route53;
@@ -122,7 +122,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
 
         route53.changeResourceRecordSets(params, (err, data) => {
             if (err) {
-                console.log(err)
+
                 reject(err);
             } else {
                 resolve(data);
