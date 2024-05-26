@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user-model';
 import crypto, { createCipheriv, createDecipheriv } from 'node:crypto'
+import { Credentials, credentialsSchema, Signin, signinSchema, Signup, signupSchema } from '@vinaydevs/common-dnsmanager';
 
 
 
@@ -10,9 +11,11 @@ interface RequestWithUserId extends Request {
     userId: string,
 }
 // User model and database operations
-console.log(process.env)
-const secretKey = crypto.createHash('sha256').update('secret').digest();;
-const iv = crypto.randomBytes(16);
+
+const secretKeyHex = '2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b'
+const ivKeyHex = '01b5a99b9a78372fb6570db8bf17010b'
+const secretKey = Buffer.from(secretKeyHex, 'hex');
+const iv = Buffer.from(ivKeyHex, 'hex')
 
 export function encrypt(text: string): string {
     const cipher = createCipheriv("aes-256-cbc", secretKey, iv);
@@ -31,7 +34,11 @@ export function decrypt(encryptedText: string): string {
 
 export const signup = async (req: Request, res: Response) => {
     try {
-        const { name, email, password } = req.body;
+        const { success } = signupSchema.safeParse(req.body);
+        if (!success) {
+            return res.status(400).json({ message: "Invalid input" })
+        }
+        const { name, email, password }: Signup = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
@@ -48,7 +55,11 @@ export const signup = async (req: Request, res: Response) => {
 
 export const signin = async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body;
+        const { success } = signinSchema.safeParse(req.body);
+        if (!success) {
+            return res.status(400).json({ message: "Invalid input" })
+        }
+        const { email, password }: Signin = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -69,7 +80,11 @@ export const signin = async (req: Request, res: Response) => {
 export const addCredentials = async (req: Request, res: Response) => {
     try {
         const userId = (req as unknown as RequestWithUserId).userId;
-        const { credentials } = req.body;
+        const { success } = credentialsSchema.safeParse(req.body);
+        if (!success) {
+            return res.status(400).json({ message: "Invalid input" })
+        }
+        const { credentials }: Credentials = req.body;
         const { accessKey, secretKey, region } = credentials;
         const user = await User.findById(userId);
         if (!user) {

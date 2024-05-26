@@ -5,7 +5,7 @@ import userMiddleware from '../middleware/user-middleware';
 
 
 const router = express.Router();
-console.log(process.env)
+
 //ensure to add middleware with (req as unknown as requestWithUserId) type
 router.get('/list-hosted-zone', userMiddleware, getAllHostedList)
 

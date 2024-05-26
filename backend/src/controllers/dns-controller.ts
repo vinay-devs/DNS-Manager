@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import User from '../models/user-model';
 import { decrypt } from './user-controller';
+import { RecordSetBody, recordSetBodySchema, Route53Record, route53RecordSchema } from '@vinaydevs/common-dnsmanager'
 
 interface requestWithUserId extends Request {
     userId: string;
@@ -19,12 +20,13 @@ export const awsInstance = async (userId: string) => {
         }
         const accessKey = decrypt(user.accessKey)
         const secretKey = decrypt(user.secretKey)
-        console.log(user.accessKey, "secretKey")
+        console.log(accessKey, "secretKey")
         AWS.config.update({
             accessKeyId: accessKey,
             secretAccessKey: secretKey,
             region: 'us-east-1'
         });
+        console.log(AWS.config)
         try {
             const route53 = new AWS.Route53()
             return route53;
@@ -35,11 +37,6 @@ export const awsInstance = async (userId: string) => {
     } catch (error) {
         return
     }
-
-
-
-
-
 }
 
 export const getAllHostedList = async (req: Request, res: Response) => {
@@ -63,12 +60,10 @@ export const getAllHostedList = async (req: Request, res: Response) => {
                     err
                 })
             }
-
         })
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
-
 }
 
 
@@ -97,10 +92,14 @@ export const getResorceRecordSet = async (req: Request, res: Response) => {
     }
 
 }
-function createRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any) {
+function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: Route53Record) {
     //Name,Values,TTL,Type
 
     return new Promise((resolve, reject) => {
+        const { success } = route53RecordSchema.safeParse(recordSet)
+        if (!success) {
+            reject("Invalid Record Set")
+        }
         const params = {
 
             ChangeBatch: {
@@ -110,7 +109,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
                         Action: 'CREATE',
                         ResourceRecordSet: {
                             Name: recordSet.Name,
-                            ResourceRecords: recordSet.Values,
+                            ResourceRecords: recordSet.ResourceRecords,
                             TTL: recordSet.TTL,
                             Type: recordSet.Type,
                         },
@@ -123,8 +122,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
 
         route53.changeResourceRecordSets(params, (err, data) => {
             if (err) {
-
-
+                console.log(err)
                 reject(err);
             } else {
                 resolve(data);
@@ -132,8 +130,12 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
         });
     });
 }
-function updateRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any) {
+function updateRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: Route53Record) {
     return new Promise((resolve, reject) => {
+        const { success } = route53RecordSchema.safeParse(recordSet)
+        if (!success) {
+            reject("Invalid Record Set")
+        }
         const params = {
             ChangeBatch: {
                 Changes: [
@@ -141,7 +143,7 @@ function updateRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
                         Action: 'UPSERT',
                         ResourceRecordSet: {
                             Name: recordSet.Name,
-                            ResourceRecords: recordSet.Values,
+                            ResourceRecords: recordSet.ResourceRecords,
                             TTL: recordSet.TTL,
                             Type: recordSet.Type,
                         },
@@ -161,8 +163,12 @@ function updateRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
         });
     });
 }
-function deleteRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any) {
+function deleteRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: Route53Record) {
     return new Promise((resolve, reject) => {
+        const { success } = route53RecordSchema.safeParse(recordSet)
+        if (!success) {
+            reject("Invalid Record Set")
+        }
         const params = {
             ChangeBatch: {
                 Changes: [
@@ -170,7 +176,7 @@ function deleteRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
                         Action: 'DELETE',
                         ResourceRecordSet: {
                             Name: recordSet.Name,
-                            ResourceRecords: recordSet.Values,
+                            ResourceRecords: recordSet.ResourceRecords,
                             TTL: recordSet.TTL,
                             Type: recordSet.Type,
                         },
@@ -189,6 +195,8 @@ function deleteRecordSet(route53: AWS.Route53, hostedZoneId: any, recordSet: any
         });
     });
 }
+
+
 export const postRecordSet = async (req: Request, res: Response) => {
     try {
         const userId = (req as unknown as requestWithUserId).userId
@@ -198,16 +206,22 @@ export const postRecordSet = async (req: Request, res: Response) => {
                 message: "AWS Connection Failed. Check The Credentials"
             })
         }
-        const body = req.body;
+        const body: RecordSetBody = req.body;
+        const { success, error } = recordSetBodySchema.safeParse(body);
+        if (!success) {
+            return res.json({
+                message: "Invalid Record Set",
+                error: error
 
-        const { operation, recordSet, hostedZoneId } = body;
+            })
+        }
+        const { operation, recordSet, hostedZoneId }: RecordSetBody = body;
         //get cache aws 
 
         switch (operation) {
             case 'create':
                 try {
                     await createRecordSet(route53, hostedZoneId, recordSet);
-
                     res.json({
                         message: "Record Set Created "
                     })
@@ -216,13 +230,10 @@ export const postRecordSet = async (req: Request, res: Response) => {
                         message: "Error While Creating Record Set"
                     })
                 }
-
-
                 break;
             case 'update':
                 try {
                     await updateRecordSet(route53, hostedZoneId, recordSet);
-
                     res.json({
                         message: "Record Set Updated "
                     })
@@ -231,7 +242,6 @@ export const postRecordSet = async (req: Request, res: Response) => {
                         message: "Error While Updating Record Set"
                     })
                 }
-
                 break;
             case 'delete':
                 try {
@@ -244,7 +254,6 @@ export const postRecordSet = async (req: Request, res: Response) => {
                         message: "Error While Deleteing Record Set"
                     })
                 }
-
                 break;
         }
     } catch (error) {

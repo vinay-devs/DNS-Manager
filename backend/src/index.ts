@@ -12,7 +12,7 @@ app.use(express.json())
 app.use('/api/v1/dns/', dnsRouter)
 app.use('/api/v1/user/', userRouter)
 
-// console.log(process.env)
+
 mongoose
     .connect(
         process.env.MONGODB_URL as string,
