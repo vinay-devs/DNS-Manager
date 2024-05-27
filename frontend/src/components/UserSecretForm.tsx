@@ -1,27 +1,24 @@
-import { useState } from "react";
 import { Button } from "./Button";
-
+import { useState } from "react";
+import { CredentialForm } from "../components/CredentialForm";
+import { Modal } from "../components/Modal";
 export const UserSecretForm = () => {
-  const [accessKey, setAccessKey] = useState({
-    accessKey: "Ikdfalskdfsadlf",
-    secretKey: "lfdskajfoisdafke",
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAccesKey, setAccessKey] = useState<boolean>(false);
+  const onClose = () => setIsModalOpen(false);
   return (
     <div className="flex flex-col">
-      <input
-        className="p-2 border bg-white m-2 rounded"
-        type="text"
-        placeholder={accessKey.accessKey}
-        disabled
-      />
-      <input
-        className="p-2 border bg-white m-2 rounded"
-        type="text"
-        placeholder={accessKey.secretKey}
-        disabled
-      />
       <div className="flex justify-end">
-        <Button placeholder="Update" styleClass="" />
+        <Button
+          placeholder="Update Credential"
+          styleClass=""
+          onclick={() => setIsModalOpen(true)}
+        />
+        {isModalOpen ? (
+          <Modal isOpen={isModalOpen} onClose={onClose}>
+            <CredentialForm onAddAccessKey={setAccessKey} onClose={onClose} />
+          </Modal>
+        ) : null}
       </div>
     </div>
   );

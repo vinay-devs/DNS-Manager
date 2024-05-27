@@ -1,14 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Credentials, credentialsSchema } from "@vinaydevs/common-dnsmanager";
 import { FieldError, FieldValues, useForm } from "react-hook-form";
+import useUserActions from "../services/useUserActions";
 
 interface credentialFormProps {
   onClose: () => void;
-  setAccesKey: (value: boolean) => void;
+  onAddAccessKey: React.Dispatch<React.SetStateAction<boolean>>;
 }
 type SubmitHandlerType = FieldValues | Credentials | FieldError;
 export const CredentialForm = ({
-  setAccesKey,
+  onAddAccessKey,
   onClose,
 }: credentialFormProps) => {
   const {
@@ -18,12 +19,16 @@ export const CredentialForm = ({
   } = useForm<SubmitHandlerType>({
     resolver: zodResolver(credentialsSchema),
   });
-  const onSubmit = (data: SubmitHandlerType) => {
+  const userActions = useUserActions();
+  const onSubmit = async (data: SubmitHandlerType) => {
+    const { accessKey, secretKey }: FieldValues = data;
     console.log(data);
-    setAccesKey(true);
+    const response = await userActions.addCredentials(accessKey, secretKey);
+    console.log(response);
+    () => onAddAccessKey(response);
     return data;
   };
-  console.log(errors);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -50,6 +55,11 @@ export const CredentialForm = ({
             placeholder="Enter your access key"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          {errors.accessKey && (
+            <span className="text-red-500 text-sm">
+              {errors.accessKey.message}
+            </span>
+          )}
         </div>
         <div className="mb-6">
           <label className="block text-gray-700 mb-2" htmlFor="secretKey">
@@ -62,6 +72,11 @@ export const CredentialForm = ({
             placeholder="Enter your secret key"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+          {errors.secretKey && (
+            <span className="text-red-500 text-sm">
+              {errors.accessKey.message}
+            </span>
+          )}
         </div>
         <button
           type="submit"

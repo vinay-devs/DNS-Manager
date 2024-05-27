@@ -69,7 +69,7 @@ export const signin = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
         const token = jwt.sign({ userId: user._id }, 'secret');
-        res.status(200).json({ token, message: 'User signed in successfully' });
+        res.status(200).json({ token, message: 'User signed in successfully', user: { name: user.name, email: user.email } });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -84,8 +84,7 @@ export const addCredentials = async (req: Request, res: Response) => {
         if (!success) {
             return res.status(400).json({ message: "Invalid input" })
         }
-        const { credentials }: Credentials = req.body;
-        const { accessKey, secretKey, region } = credentials;
+        const { accessKey, secretKey }: Credentials = req.body;
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -96,7 +95,7 @@ export const addCredentials = async (req: Request, res: Response) => {
         await User.updateOne({
             accessKey: accessEnc,
             secretKey: secretEnc,
-            region: region
+            region: 'us-east-1',
         })
         await user.save();
         res.status(200).json({ message: 'Credentials added successfully' });

@@ -27,14 +27,20 @@ const NewRecordSchema = z.object({
   Multiline: z.string().min(1, "Cannot be Empty"),
 });
 type NewRecordSchema = z.infer<typeof NewRecordSchema>;
-const AddRecordForm = ({
+
+const EditRecordForm = ({
   hostZoneName,
   hostedZoneId,
+  defaultValues,
+  setFetch,
 }: {
   hostZoneName: string;
   hostedZoneId: string;
+  defaultValues: NewRecordSchema;
 }) => {
-  const [recordSets, setRecordSets] = useState<{ Value: string }[]>([]);
+  const [recordSets, setRecordSets] = useState<{ Value: string }[]>(
+    defaultValues.Multiline.split("\n").map((record) => ({ Value: record }))
+  );
 
   const {
     register,
@@ -44,9 +50,10 @@ const AddRecordForm = ({
     formState: { errors },
   } = useForm<NewRecordSchema>({
     resolver: zodResolver(NewRecordSchema),
+    defaultValues,
   });
 
-  const [recordType, setRecordType] = useState<string>("A");
+  const [recordType, setRecordType] = useState<string>(defaultValues.Type);
   const userDNSactions = useUserDnsActions();
   const onSubmit = async (data: NewRecordSchema) => {
     const { Name, Type } = data;
@@ -58,8 +65,11 @@ const AddRecordForm = ({
     const { success } = route53RecordSchema.safeParse(NewRecordData);
     if (!success) {
       toast.error("Input Error");
+      return;
     }
-    await userDNSactions.postRecordset(NewRecordData, hostedZoneId, "create");
+    await userDNSactions.postRecordset(NewRecordData, hostedZoneId, "update");
+    setFetch((prev) => !prev);
+    toast.success("Record updated successfully");
   };
 
   console.log(errors);
@@ -74,7 +84,7 @@ const AddRecordForm = ({
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-      <h1 className="text-center font-bold text-2xl">Add New Record</h1>
+      <h1 className="text-center font-bold text-2xl">Edit Record</h1>
       <div>
         <label>Record Name:</label>
         <br />
@@ -82,6 +92,7 @@ const AddRecordForm = ({
           className="w-1/2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           {...register("Name", { required: true })}
           type="text"
+          disabled
         />
         <span className=" ml-3">{hostZoneName}</span>
         <br />
@@ -125,7 +136,7 @@ const AddRecordForm = ({
             )?.placeholder
           }
         />
-        <span className="text-xs ">
+        <span className="text-xs">
           Enter multiple values on separate lines.
         </span>
         {errors.Multiline && (
@@ -134,10 +145,10 @@ const AddRecordForm = ({
       </div>
 
       <button className="bg-black text-white p-2 w-full rounded" type="submit">
-        Add Record
+        Update Record
       </button>
     </form>
   );
 };
 
-export default AddRecordForm;
+export default EditRecordForm;

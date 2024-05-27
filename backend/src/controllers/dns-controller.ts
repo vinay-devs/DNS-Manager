@@ -10,53 +10,60 @@ interface requestWithUserId extends Request {
 }
 
 export const awsInstance = async (userId: string) => {
-    //check the cache , if not then grap the details from db and make instance
     try {
-        const user = await User.findOne({
-            _id: userId
-        })
+        // Fetch user from database
+        const user = await User.findOne({ _id: userId });
         if (!user) {
-            return
+            throw "User Not Found";
         }
-        const accessKey = decrypt(user.accessKey)
-        const secretKey = decrypt(user.secretKey)
 
+        // Decrypt credentials
+        const accessKey = decrypt(user.accessKey);
+        const secretKey = decrypt(user.secretKey);
+
+
+        // Update AWS configuration
         AWS.config.update({
             accessKeyId: accessKey,
             secretAccessKey: secretKey,
             region: 'us-east-1'
         });
 
+        const route53 = new AWS.Route53();
+
         try {
-            const route53 = new AWS.Route53()
-            return route53;
+            const ans = await route53.listHostedZones().promise()
+            return true;
         } catch (error) {
-            return
+            return false
         }
 
+
+
     } catch (error) {
-        return
+        console.error('Error in awsInstance function:', error);
+        return false;
     }
-}
+};
 
 export const getAllHostedList = async (req: Request, res: Response) => {
     //get aws cache or
     try {
         const userId = (req as unknown as requestWithUserId).userId
-
-        const route53 = await awsInstance(userId);
-
-        if (!route53) {
-            return res.json({
-                message: "AWS Connection Failed. Check The Credentials"
+        const conn = await awsInstance(userId).then((ans) => { return ans });
+        if (!conn) {
+            return res.status(401).json({
+                message: 'AWS Connection Failed. Check The Credentials'
             })
         }
-        await route53.listHostedZones((err, ans) => {
+        const route53 = new AWS.Route53()
 
+
+        await route53.listHostedZones((err, ans) => {
             if (ans) {
                 return res.json(ans)
             } else {
-                return res.json({
+                return res.status(401).json({
                     err
                 })
             }
@@ -70,13 +77,17 @@ export const getAllHostedList = async (req: Request, res: Response) => {
 export const getResorceRecordSet = async (req: Request, res: Response) => {
     try {
         const userId = (req as unknown as requestWithUserId).userId
-        const route53 = await awsInstance(userId)
-        const HostedZoneId = req.params.hostedzoneId;
-        if (!route53) {
-            return res.json({
-                message: "AWS Connection Failed. Check The Credentials"
+
+        const conn = await awsInstance(userId);
+        if (!conn) {
+            return res.status(401).json({
+                message: 'AWS Connection Failed. Check The Credentials'
             })
         }
+        const route53 = new AWS.Route53()
+
+        const HostedZoneId = req.params.hostedzoneId;
+
         await route53.listResourceRecordSets({ HostedZoneId: HostedZoneId }, (err, ans) => {
             if (ans) {
                 const resourceSetWithId = ans.ResourceRecordSets.map((resource) => {
@@ -96,6 +107,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
     //Name,Values,TTL,Type
 
     return new Promise((resolve, reject) => {
+        console.log("HEY")
         const { success } = route53RecordSchema.safeParse(recordSet)
         if (!success) {
             reject("Invalid Record Set")
@@ -110,7 +122,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
                         ResourceRecordSet: {
                             Name: recordSet.Name,
                             ResourceRecords: recordSet.ResourceRecords,
-                            TTL: recordSet.TTL,
+                            TTL: 300,
                             Type: recordSet.Type,
                         },
 
@@ -122,7 +134,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
 
         route53.changeResourceRecordSets(params, (err, data) => {
             if (err) {
-
+                // console.log(err?.InvalidChangeBatch)
                 reject(err);
             } else {
                 resolve(data);
@@ -144,7 +156,7 @@ function updateRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
                         ResourceRecordSet: {
                             Name: recordSet.Name,
                             ResourceRecords: recordSet.ResourceRecords,
-                            TTL: recordSet.TTL,
+                            TTL: 300,
                             Type: recordSet.Type,
                         },
                     }
@@ -165,8 +177,10 @@ function updateRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
 }
 function deleteRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: Route53Record) {
     return new Promise((resolve, reject) => {
+        console.log(hostedZoneId, recordSet)
         const { success } = route53RecordSchema.safeParse(recordSet)
         if (!success) {
+            console.log("hey")
             reject("Invalid Record Set")
         }
         const params = {
@@ -200,16 +214,21 @@ function deleteRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
 export const postRecordSet = async (req: Request, res: Response) => {
     try {
         const userId = (req as unknown as requestWithUserId).userId
-        const route53 = await awsInstance(userId)
-        if (!route53) {
-            return res.json({
-                message: "AWS Connection Failed. Check The Credentials"
+
+        const conn = await awsInstance(userId);
+        if (!conn) {
+            return res.status(401).json({
+                message: 'AWS Connection Failed. Check The Credentials'
             })
         }
+        const route53 = new AWS.Route53()
+
+
         const body: RecordSetBody = req.body;
+        console.log(JSON.stringify(body))
         const { success, error } = recordSetBodySchema.safeParse(body);
         if (!success) {
-            return res.json({
+            return res.status(402).json({
                 message: "Invalid Record Set",
                 error: error
 
@@ -221,12 +240,13 @@ export const postRecordSet = async (req: Request, res: Response) => {
         switch (operation) {
             case 'create':
                 try {
+
                     await createRecordSet(route53, hostedZoneId, recordSet);
                     res.json({
                         message: "Record Set Created "
                     })
                 } catch (error) {
-                    res.json({
+                    res.status(500).json({
                         message: "Error While Creating Record Set"
                     })
                 }
@@ -238,7 +258,7 @@ export const postRecordSet = async (req: Request, res: Response) => {
                         message: "Record Set Updated "
                     })
                 } catch (error) {
-                    res.json({
+                    res.status(500).json({
                         message: "Error While Updating Record Set"
                     })
                 }
@@ -250,7 +270,7 @@ export const postRecordSet = async (req: Request, res: Response) => {
                         message: "Record Set Deleted "
                     })
                 } catch (error) {
-                    res.json({
+                    res.status(500).json({
                         message: "Error While Deleteing Record Set"
                     })
                 }

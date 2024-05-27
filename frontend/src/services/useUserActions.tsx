@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { Credentials } from "@vinaydevs/common-dnsmanager";
 
 const useUserActions = () => {
   const [user, setUser] = useState(null);
@@ -40,9 +41,10 @@ const useUserActions = () => {
         email,
         password,
       });
-      console.log(response);
+
       toast.success(response?.data.message);
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       navigate("/home");
       setUser(response.data.user);
     } catch (error) {
@@ -54,15 +56,17 @@ const useUserActions = () => {
     }
   };
 
-  const addCredentials = async (credentials: any) => {
+  const addCredentials = async (accessKey, secretKey) => {
     try {
       const response = await axios.post(`${URL}/api/v1/user/credentials`, {
-        credentials,
+        accessKey,
+        secretKey,
       });
-      console.log(response);
-      setUser(response.data.user);
+      toast.success(response.data.message);
+      return true;
     } catch (error) {
       toast.error(error.response.message);
+      return false;
     }
   };
 

@@ -39,10 +39,8 @@ export const signinSchema = z.object({
 export type Signin = z.infer<typeof signinSchema>;
 
 export const credentialsSchema = z.object({
-    credentials: z.object({
-        accessKey: z.string().min(16, 'Access key should be atleast 16 characters'),
-        secretKey: z.string().min(16, 'Secret key should be atleast 16 characters'),
-    })
+    accessKey: z.string().min(16, 'Access key should be atleast 16 characters'),
+    secretKey: z.string().min(16, 'Secret key should be atleast 16 characters'),
 });
 
 export type Credentials = z.infer<typeof credentialsSchema>;
