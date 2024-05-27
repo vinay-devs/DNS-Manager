@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 type homeNavProps = {
   values: string[];
@@ -27,6 +28,7 @@ export const HomeNav = () => {
   return (
     <div className="flex justify-between mb-9">
       <h1 className="font-bold text-3xl">DNS Management</h1>
+
       <div className="relative flex gap-9" ref={menuRef}>
         <div>
           <select name="hostedzone">
@@ -45,7 +47,9 @@ export const HomeNav = () => {
           {dropdown ? (
             <div className="z-100 absolute min-w-max right-3 mx-4 my-2 border rounded">
               <div className="bg-gray-400 px-4 py-1 hover:bg-black hover:text-white border-b">
-                <h1>Profile</h1>
+                <Link to="/profile">
+                  <h1>Profile</h1>
+                </Link>
               </div>
               <div className="bg-gray-400 px-4 py-1 hover:bg-black hover:text-white">
                 <h1>Log Out</h1>

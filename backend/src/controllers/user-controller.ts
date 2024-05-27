@@ -48,7 +48,7 @@ export const signup = async (req: Request, res: Response) => {
         await newUser.save();
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        console.log(error)
+
         res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -69,7 +69,7 @@ export const signin = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'Invalid password' });
         }
         const token = jwt.sign({ userId: user._id }, 'secret');
-        res.status(200).json({ token });
+        res.status(200).json({ token, message: 'User signed in successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -101,7 +101,7 @@ export const addCredentials = async (req: Request, res: Response) => {
         await user.save();
         res.status(200).json({ message: 'Credentials added successfully' });
     } catch (error) {
-        console.log(error)
+
         res.status(500).json({ message: 'Internal server error' });
     }
 };

@@ -30,7 +30,6 @@ const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
             }
             next();
         } catch (error) {
-            console.log(error)
             return res.status(401).json({ message: 'Invalid token' });
         }
     } catch (error) {

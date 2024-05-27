@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const HeadingSignin = () => {
   return (
     <div className="mb-8">
@@ -6,9 +8,9 @@ export const HeadingSignin = () => {
       </h1>
       <p className="text-center">
         or{" "}
-        <a className=" text-violet-700 text-md" href="/signup">
+        <Link className=" text-violet-700 text-md" to="/signup">
           register for a new account
-        </a>{" "}
+        </Link>{" "}
       </p>
     </div>
   );
