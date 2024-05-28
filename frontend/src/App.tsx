@@ -1,5 +1,9 @@
 import "./App.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import { LandingPage } from "./pages/LandingPage";
 import { Signup } from "./pages/Signup";
 import { Signin } from "./pages/Signin";
@@ -43,6 +47,10 @@ function App() {
           element: <HomePage />,
         },
       ],
+    },
+    {
+      path: "*",
+      element: <Navigate to="/signin" />,
     },
   ]);
 

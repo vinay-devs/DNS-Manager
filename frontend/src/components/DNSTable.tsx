@@ -3,18 +3,27 @@ import { Button } from "./Button";
 import { useState, useEffect } from "react";
 import { Modal } from "./Modal";
 
-import EditRecordForm from "./EditRecordForm";
-
-export const DNSTable = ({ recordSet, hostedZoneId, setFetch, hostedName }) => {
+import EditRecordForm, { NewRecordSchema } from "./EditRecordForm";
+import { Route53RecordsWithIdProps } from "../pages/HomePage";
+import { Route53Record } from "@vinaydevs/common-dnsmanager";
+type DNSTableProps = {
+  recordSet: Route53RecordsWithIdProps;
+  hostedZoneId: string;
+  setFetch: React.Dispatch<React.SetStateAction<boolean>>;
+  hostedName: string;
+};
+export const DNSTable = ({
+  recordSet,
+  hostedZoneId,
+  setFetch,
+  hostedName,
+}: DNSTableProps) => {
   const [loader, setLoader] = useState(false);
   const [isEditRecordModalOpen, setIsEditRecordModalOpen] = useState(false);
-  const [filterRecordSet, setFilterRecordSet] = useState([]);
+  const [filterRecordSet, setFilterRecordSet] =
+    useState<Route53RecordsWithIdProps>([]);
   const [filterValue, setFilterValue] = useState("");
-  const [editRecord, setEditRecord] = useState({
-    Name: "",
-    Type: "",
-    Multiline: "",
-  });
+  const [editRecord, setEditRecord] = useState<NewRecordSchema>();
   const userDNSActions = useUserDnsActions();
   const onEditRecordClose = () => setIsEditRecordModalOpen(false);
   const deleteRecord = async (id: string) => {
@@ -22,6 +31,7 @@ export const DNSTable = ({ recordSet, hostedZoneId, setFetch, hostedName }) => {
       return record.id == id;
     });
     const removeIdFromRecord = filteredRecord.map((record) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...rest } = record;
       return rest;
     });
@@ -39,13 +49,20 @@ export const DNSTable = ({ recordSet, hostedZoneId, setFetch, hostedName }) => {
     const filteredRecord = recordSet.filter((record) => {
       return record.id == id;
     });
-    const removeIdFromRecord = filteredRecord.map((record) => {
+    const removeIdFromRecord: Route53Record[] = filteredRecord.map((record) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...rest } = record;
-      return rest;
+      return {
+        ...rest,
+      };
     });
-    const multiLine = removeIdFromRecord[0].ResourceRecords.map((record) => {
+    let multiLine = removeIdFromRecord[0]?.ResourceRecords?.map((record) => {
       return record.Value;
     }).join("\n");
+
+    if (!multiLine) {
+      multiLine = " ";
+    }
     setEditRecord({
       Name: removeIdFromRecord[0].Name.split(`.${hostedName}`)[0],
       Type: removeIdFromRecord[0].Type,
@@ -58,9 +75,7 @@ export const DNSTable = ({ recordSet, hostedZoneId, setFetch, hostedName }) => {
     setFilterRecordSet(recordSet);
   }, [recordSet]);
 
-  console.log(recordSet);
-  console.log(filterRecordSet);
-  const handleFilter = (e) => {
+  const handleFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
     const filterValue = e.target.value;
 
     setFilterValue(filterValue);
@@ -87,7 +102,7 @@ export const DNSTable = ({ recordSet, hostedZoneId, setFetch, hostedName }) => {
           <EditRecordForm
             hostZoneName={hostedName}
             hostedZoneId={hostedZoneId}
-            defaultValues={editRecord}
+            defaultValues={editRecord ?? { Name: "", Type: "A", Multiline: "" }}
             setFetch={setFetch}
           />
         </Modal>

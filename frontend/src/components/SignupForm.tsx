@@ -1,11 +1,6 @@
 import { Link } from "react-router-dom";
 import { InputBox } from "./InputBox";
-import {
-  useForm,
-  SubmitHandler,
-  FieldValues,
-  FieldError,
-} from "react-hook-form";
+import { useForm, SubmitHandler, FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Signup, signupSchema } from "@vinaydevs/common-dnsmanager";
 import useUserActions from "../services/useUserActions";
@@ -44,7 +39,7 @@ export const SignupForm = () => {
           />
           {errors?.name && (
             <p className="text-sm pt-0 text-end text-red-600">
-              {errors?.name?.message}
+              {errors?.name?.message?.toString()}
             </p>
           )}
           <InputBox
@@ -55,7 +50,7 @@ export const SignupForm = () => {
           />
           {errors?.email && (
             <p className="text-sm pt-0 text-end text-red-600">
-              {errors?.email?.message}
+              {errors?.email?.message?.toString()}
             </p>
           )}
           <InputBox
@@ -66,7 +61,7 @@ export const SignupForm = () => {
           />
           {errors?.password && (
             <p className="text-sm pt-0 text-end text-red-600">
-              {errors?.password?.message}
+              {errors?.password?.message?.toString()}
             </p>
           )}
 

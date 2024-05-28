@@ -5,7 +5,7 @@ import {
 } from "@vinaydevs/common-dnsmanager";
 import { zodResolver } from "@hookform/resolvers/zod";
 import route53RecordTypesWithExample from "../util";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "react-toastify";
 import useUserDnsActions from "../services/useUserDnsActions";
@@ -26,7 +26,7 @@ const NewRecordSchema = z.object({
   ]),
   Multiline: z.string().min(1, "Cannot be Empty"),
 });
-type NewRecordSchema = z.infer<typeof NewRecordSchema>;
+export type NewRecordSchema = z.infer<typeof NewRecordSchema>;
 
 const EditRecordForm = ({
   hostZoneName,
@@ -37,6 +37,7 @@ const EditRecordForm = ({
   hostZoneName: string;
   hostedZoneId: string;
   defaultValues: NewRecordSchema;
+  setFetch: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   const [recordSets, setRecordSets] = useState<{ Value: string }[]>(
     defaultValues.Multiline.split("\n").map((record) => ({ Value: record }))

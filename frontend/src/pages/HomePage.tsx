@@ -13,7 +13,7 @@ type Route53RecordWithIdProps = Route53Record & {
   id: string;
 };
 
-type Route53RecordsWithIdProps = Route53RecordWithIdProps[];
+export type Route53RecordsWithIdProps = Route53RecordWithIdProps[];
 
 export const HomePage = () => {
   const [isAccesKey, setAccessKey] = useState<boolean>(false);

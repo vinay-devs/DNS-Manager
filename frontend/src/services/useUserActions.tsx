@@ -2,7 +2,6 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { Credentials } from "@vinaydevs/common-dnsmanager";
 
 const useUserActions = () => {
   const [user, setUser] = useState(null);
@@ -56,7 +55,7 @@ const useUserActions = () => {
     }
   };
 
-  const addCredentials = async (accessKey, secretKey) => {
+  const addCredentials = async (accessKey: string, secretKey: string) => {
     try {
       const response = await axios.post(`${URL}/api/v1/user/credentials`, {
         accessKey,
@@ -65,7 +64,10 @@ const useUserActions = () => {
       toast.success(response.data.message);
       return true;
     } catch (error) {
-      toast.error(error.response.message);
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data.message);
+      }
+
       return false;
     }
   };

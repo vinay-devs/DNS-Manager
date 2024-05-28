@@ -4,7 +4,7 @@ import { CredentialForm } from "../components/CredentialForm";
 import { Modal } from "../components/Modal";
 export const UserSecretForm = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAccesKey, setAccessKey] = useState<boolean>(false);
+  const [, setAccessKey] = useState<boolean>(false);
   const onClose = () => setIsModalOpen(false);
   return (
     <div className="flex flex-col">

@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { Route53Record } from "@vinaydevs/common-dnsmanager";
 import axios from "axios";
 import { toast } from "react-toastify";
 const useUserDnsActions = () => {
-  const [hostedId, setHostedId] = useState(null);
-  const [recordset, setRecordset] = useState([]);
   const URL = "http://localhost:5001";
   const token = localStorage.getItem("token");
   if (token) {
@@ -35,12 +33,17 @@ const useUserDnsActions = () => {
       return response.data;
       console.log(response.data);
     } catch (error) {
-      console.error("Error getting recordset:", error);
-      toast.error(error.response?.data.message);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      }
     }
   };
 
-  const postRecordset = async (recordsetData, hostedZoneId, operation) => {
+  const postRecordset = async (
+    recordsetData: Route53Record,
+    hostedZoneId: string,
+    operation: string
+  ) => {
     try {
       const response = await axios.post(URL + "/api/v1/dns/record-set", {
         recordSet: recordsetData,
@@ -51,14 +54,13 @@ const useUserDnsActions = () => {
       toast.success(response.data.message);
       // Handle the response as needed
     } catch (error) {
-      console.error("Error posting recordset:", error);
-      toast.error(error.response?.data.message);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      }
     }
   };
 
   return {
-    hostedId,
-    recordset,
     getHostedId,
     getRecordset,
     postRecordset,

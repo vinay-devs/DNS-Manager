@@ -38,22 +38,22 @@ export const SigninForm = () => {
             name="Email"
             type="email"
           />
-          {errors?.email && (
+          {errors.email ? (
             <p className="text-sm pt-0 text-end text-red-600">
-              {errors?.email?.message}
+              {errors?.email?.message?.toString()}
             </p>
-          )}
+          ) : null}
           <InputBox
             register={register}
             placeholder="Password"
             name="Password"
             type="password"
           />
-          {errors?.password && (
-            <p className="text-sm pt-0 text-end text-red-600">
-              {errors?.password?.message}
-            </p>
-          )}
+
+          <p className="text-sm pt-0 text-end text-red-600">
+            {errors?.password?.message?.toString()}
+          </p>
+
           <button
             className="bg-black mt-3 text-white p-2 px-4 text-sm rounded-md  "
             type="submit"

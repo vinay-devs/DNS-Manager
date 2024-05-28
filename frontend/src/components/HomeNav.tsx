@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useUserDnsActions from "../services/useUserDnsActions";
 
 type homeNavProps = {
@@ -7,20 +7,32 @@ type homeNavProps = {
   setHostedId: React.Dispatch<React.SetStateAction<string>>;
   setHostedName: React.Dispatch<React.SetStateAction<string>>;
 };
+type ResourceState = {
+  Id: string;
+  Name: string;
+  ResourceRecordSetCount: number;
+  CallerReference: string;
+  Config: {
+    Comment: string;
+    privateZone: boolean;
+  };
+};
 export const HomeNav = ({
   setAccessKey,
   setHostedId,
   setHostedName,
 }: homeNavProps) => {
   const [dropdown, setDropDown] = useState(false);
-  const [zoneValues, setZoneValues] = useState([]);
+  const [zoneValues, setZoneValues] = useState<ResourceState[]>([]);
   const [hostedZoneId, setHostedZoneId] = useState<string>("");
   const menuRef = useRef<HTMLInputElement>(null);
-  let user = localStorage.getItem("user");
-  if (user) {
-    user = JSON.parse(user);
+  const navigate = useNavigate();
+  let user: { name: string; email: string } | null = null;
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    user = JSON.parse(userData) as { name: string; email: string };
   } else {
-    <Navigate to="/login" />;
+    navigate("/signin");
   }
 
   const handleClickOutside = (e: Event) => {
@@ -31,8 +43,12 @@ export const HomeNav = ({
   const userDNSActions = useUserDnsActions();
   function handleOnChange(e: React.ChangeEvent<HTMLSelectElement>) {
     setHostedZoneId(e.target.value);
-    const data = zoneValues.find((value) => value.Id === e.target.value);
-    setHostedName(data.Name);
+    const data: { Name: string } | undefined = zoneValues.find(
+      (value: { Id: string }) => value.Id === e.target.value
+    );
+    if (data) {
+      setHostedName(data.Name);
+    }
     setHostedId(e.target.value);
   }
 
@@ -46,6 +62,7 @@ export const HomeNav = ({
   useEffect(() => {
     const getHostedId = async () => {
       const response = await userDNSActions.getHostedId();
+      console.log(response);
       if (response) {
         setAccessKey(true);
         setZoneValues(response);
@@ -60,7 +77,7 @@ export const HomeNav = ({
   }, []);
 
   const { profile } = {
-    profile: user.name[0].toUpperCase(),
+    profile: user?.name[0].toUpperCase(),
   };
 
   return (
