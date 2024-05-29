@@ -95,7 +95,7 @@ const addCredentials = (req, res) => __awaiter(void 0, void 0, void 0, function*
         }
         const accessEnc = encrypt(accessKey);
         const secretEnc = encrypt(secretKey);
-        yield user_model_1.default.updateOne({
+        yield user_model_1.default.updateOne({ _id: user._id }, {
             accessKey: accessEnc,
             secretKey: secretEnc,
             region: 'us-east-1',

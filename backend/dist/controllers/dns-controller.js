@@ -107,7 +107,6 @@ exports.getResorceRecordSet = getResorceRecordSet;
 function createRecordSet(route53, hostedZoneId, recordSet) {
     //Name,Values,TTL,Type
     return new Promise((resolve, reject) => {
-        console.log("HEY");
         const { success } = common_dnsmanager_1.route53RecordSchema.safeParse(recordSet);
         if (!success) {
             reject("Invalid Record Set");
@@ -131,7 +130,6 @@ function createRecordSet(route53, hostedZoneId, recordSet) {
         };
         route53.changeResourceRecordSets(params, (err, data) => {
             if (err) {
-                // console.log(err?.InvalidChangeBatch)
                 reject(err);
             }
             else {
@@ -174,10 +172,8 @@ function updateRecordSet(route53, hostedZoneId, recordSet) {
 }
 function deleteRecordSet(route53, hostedZoneId, recordSet) {
     return new Promise((resolve, reject) => {
-        console.log(hostedZoneId, recordSet);
         const { success } = common_dnsmanager_1.route53RecordSchema.safeParse(recordSet);
         if (!success) {
-            console.log("hey");
             reject("Invalid Record Set");
         }
         const params = {
@@ -217,7 +213,6 @@ const postRecordSet = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         const route53 = new aws_sdk_1.default.Route53();
         const body = req.body;
-        console.log(JSON.stringify(body));
         const { success, error } = common_dnsmanager_1.recordSetBodySchema.safeParse(body);
         if (!success) {
             return res.status(402).json({

@@ -16,7 +16,7 @@ app.use('/api/v1/user/', userRouter)
 
 mongoose
     .connect(
-        process.env.MONGODB_URL as string,
+        "mongodb+srv://vinaydevs:jqF-phGAETG_W6F@cluster0.rdf1mnc.mongodb.net/dns-manager",
     )
     .then(() =>
         app.listen(5001, () =>

@@ -17,6 +17,6 @@ app.use((0, cors_1.default)());
 app.use('/api/v1/dns/', dns_router_1.dnsRouter);
 app.use('/api/v1/user/', user_router_1.userRouter);
 mongoose_1.default
-    .connect(process.env.MONGODB_URL)
+    .connect("mongodb+srv://vinaydevs:jqF-phGAETG_W6F@cluster0.rdf1mnc.mongodb.net/dns-manager")
     .then(() => app.listen(5001, () => console.log(`Connected to database and server running at 5001`)))
     .catch((err) => console.log(err));
