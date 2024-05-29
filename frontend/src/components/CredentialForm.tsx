@@ -22,9 +22,9 @@ export const CredentialForm = ({
   const userActions = useUserActions();
   const onSubmit = async (data: SubmitHandlerType) => {
     const { accessKey, secretKey }: FieldValues = data;
-    console.log(data);
+
     const response = await userActions.addCredentials(accessKey, secretKey);
-    console.log(response);
+
     () => onAddAccessKey(response);
     return data;
   };
@@ -55,9 +55,11 @@ export const CredentialForm = ({
             placeholder="Enter your access key"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          {errors.accessKey && (
+
+          {errors?.accessKey && (
+            //eslint-disable-next-line
             <span className="text-red-500 text-sm">
-              {errors.accessKey.message}
+              {errors.accessKey?.message.toString()}
             </span>
           )}
         </div>
@@ -72,9 +74,9 @@ export const CredentialForm = ({
             placeholder="Enter your secret key"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
-          {errors.secretKey && (
+          {errors?.secretKey && (
             <span className="text-red-500 text-sm">
-              {errors.accessKey.message}
+              {errors?.accessKey.message.toString()}
             </span>
           )}
         </div>

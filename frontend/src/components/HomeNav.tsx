@@ -62,7 +62,7 @@ export const HomeNav = ({
   useEffect(() => {
     const getHostedId = async () => {
       const response = await userDNSActions.getHostedId();
-      console.log(response);
+
       if (response) {
         setAccessKey(true);
         setZoneValues(response);

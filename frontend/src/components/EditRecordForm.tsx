@@ -73,7 +73,6 @@ const EditRecordForm = ({
     toast.success("Record updated successfully");
   };
 
-  console.log(errors);
   const WatchRecordSetValue = watch("Multiline");
 
   useEffect(() => {

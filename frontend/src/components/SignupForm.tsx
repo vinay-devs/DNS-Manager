@@ -18,9 +18,8 @@ export const SignupForm = () => {
   const onSubmit: SubmitHandler<SubmitHandlerType> = async (
     data: SubmitHandlerType
   ) => {
-    console.log(data);
     const { name, email, password }: FieldValues = data;
-    console.log(name, email, password);
+
     await userActions.signup(name, email, password);
     return data;
   };

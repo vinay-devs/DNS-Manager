@@ -18,6 +18,7 @@ export const awsInstance = async (userId: string) => {
         }
 
         // Decrypt credentials
+
         const accessKey = decrypt(user.accessKey);
         const secretKey = decrypt(user.secretKey);
 
@@ -107,7 +108,7 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
     //Name,Values,TTL,Type
 
     return new Promise((resolve, reject) => {
-        console.log("HEY")
+
         const { success } = route53RecordSchema.safeParse(recordSet)
         if (!success) {
             reject("Invalid Record Set")
@@ -134,7 +135,6 @@ function createRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
 
         route53.changeResourceRecordSets(params, (err, data) => {
             if (err) {
-                // console.log(err?.InvalidChangeBatch)
                 reject(err);
             } else {
                 resolve(data);
@@ -177,10 +177,10 @@ function updateRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: 
 }
 function deleteRecordSet(route53: AWS.Route53, hostedZoneId: string, recordSet: Route53Record) {
     return new Promise((resolve, reject) => {
-        console.log(hostedZoneId, recordSet)
+
         const { success } = route53RecordSchema.safeParse(recordSet)
         if (!success) {
-            console.log("hey")
+
             reject("Invalid Record Set")
         }
         const params = {
@@ -225,7 +225,7 @@ export const postRecordSet = async (req: Request, res: Response) => {
 
 
         const body: RecordSetBody = req.body;
-        console.log(JSON.stringify(body))
+
         const { success, error } = recordSetBodySchema.safeParse(body);
         if (!success) {
             return res.status(402).json({

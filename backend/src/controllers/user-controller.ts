@@ -92,7 +92,8 @@ export const addCredentials = async (req: Request, res: Response) => {
         const accessEnc = encrypt(accessKey)
         const secretEnc = encrypt(secretKey);
 
-        await User.updateOne({
+
+        await User.updateOne({ _id: user._id }, {
             accessKey: accessEnc,
             secretKey: secretEnc,
             region: 'us-east-1',

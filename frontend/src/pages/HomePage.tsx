@@ -24,12 +24,11 @@ export const HomePage = () => {
   const [recordSet, setRecordSet] = useState([{}] as Route53RecordsWithIdProps);
   const [isAddRecordModalOpen, setIsAddRecordModalOpen] = useState(false);
 
-  console.log(isAddRecordModalOpen);
   const onClose = () => setIsModalOpen(false);
   const onAddRecordClose = () => setIsAddRecordModalOpen(false);
 
   const extractedHostedId = hostedId.substring(hostedId.lastIndexOf("/") + 1);
-  console.log(extractedHostedId);
+
   const userDnsActions = useUserDnsActions();
   useEffect(() => {
     const getRecordset = async () => {

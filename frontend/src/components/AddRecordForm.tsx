@@ -62,7 +62,6 @@ const AddRecordForm = ({
     await userDNSactions.postRecordset(NewRecordData, hostedZoneId, "create");
   };
 
-  console.log(errors);
   const WatchRecordSetValue = watch("Multiline");
 
   useEffect(() => {

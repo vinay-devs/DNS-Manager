@@ -31,7 +31,6 @@ const useUserDnsActions = () => {
         URL + `/api/v1/dns/list-resource-record/${hostedId}`
       );
       return response.data;
-      console.log(response.data);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -50,7 +49,7 @@ const useUserDnsActions = () => {
         hostedZoneId,
         operation,
       });
-      console.log(response);
+
       toast.success(response.data.message);
       // Handle the response as needed
     } catch (error) {
