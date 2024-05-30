@@ -1,19 +1,21 @@
-import { useState } from "react";
 import axios from "axios";
+import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const useUserActions = () => {
-  const [user, setUser] = useState(null);
-  const URL = "http://localhost:5001";
+  const URL = "https://dns-manager-1-lerl.onrender.com";
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  } else {
-    delete axios.defaults.headers.common["Authorization"];
-    toast.error("Please login to continue");
-  }
+
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common["Authorization"];
+      toast.error("Please login to continue");
+    }
+  }, [token]);
 
   const signup = async (name: string, email: string, password: string) => {
     try {
@@ -24,7 +26,6 @@ const useUserActions = () => {
       });
       navigate("/signin");
       toast.success(response.data.message);
-      setUser(response.data.user);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -45,7 +46,6 @@ const useUserActions = () => {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       navigate("/home");
-      setUser(response.data.user);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -73,7 +73,6 @@ const useUserActions = () => {
   };
 
   return {
-    user,
     signup,
     signin,
     addCredentials,

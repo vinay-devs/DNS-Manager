@@ -1,14 +1,18 @@
 import { Route53Record } from "@vinaydevs/common-dnsmanager";
+import { useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 const useUserDnsActions = () => {
-  const URL = "http://localhost:5001";
+  const URL = "https://dns-manager-1-lerl.onrender.com";
   const token = localStorage.getItem("token");
-  if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  } else {
-    delete axios.defaults.headers.common["Authorization"];
-  }
+
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common["Authorization"];
+    }
+  }, [token]);
 
   const getHostedId = async () => {
     try {

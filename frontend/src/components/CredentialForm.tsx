@@ -1,13 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Credentials, credentialsSchema } from "@vinaydevs/common-dnsmanager";
-import { FieldError, FieldValues, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import useUserActions from "../services/useUserActions";
 
 interface credentialFormProps {
   onClose: () => void;
   onAddAccessKey: React.Dispatch<React.SetStateAction<boolean>>;
 }
-type SubmitHandlerType = FieldValues | Credentials | FieldError;
 export const CredentialForm = ({
   onAddAccessKey,
   onClose,
@@ -16,16 +15,16 @@ export const CredentialForm = ({
     handleSubmit,
     register,
     formState: { errors },
-  } = useForm<SubmitHandlerType>({
+  } = useForm<Credentials>({
     resolver: zodResolver(credentialsSchema),
   });
   const userActions = useUserActions();
-  const onSubmit = async (data: SubmitHandlerType) => {
-    const { accessKey, secretKey }: FieldValues = data;
+  const onSubmit = async (data: Credentials) => {
+    const { accessKey, secretKey } = data;
 
     const response = await userActions.addCredentials(accessKey, secretKey);
 
-    () => onAddAccessKey(response);
+    onAddAccessKey(response);
     return data;
   };
 
@@ -49,6 +48,7 @@ export const CredentialForm = ({
             Access Key
           </label>
           <input
+            // @ ts-expect-error
             {...register("accessKey")}
             id="accessKey"
             type="text"
@@ -59,7 +59,7 @@ export const CredentialForm = ({
           {errors?.accessKey && (
             //eslint-disable-next-line
             <span className="text-red-500 text-sm">
-              {errors.accessKey?.message.toString()}
+              {errors?.accessKey?.message?.toString()}
             </span>
           )}
         </div>
@@ -76,7 +76,7 @@ export const CredentialForm = ({
           />
           {errors?.secretKey && (
             <span className="text-red-500 text-sm">
-              {errors?.accessKey.message.toString()}
+              {errors?.accessKey?.message?.toString()}
             </span>
           )}
         </div>
