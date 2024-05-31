@@ -19,6 +19,10 @@ export const awsInstance = async (userId: string) => {
 
         // Decrypt credentials
 
+        if (!user.secretKey && !user.accessKey) {
+            return false;
+        }
+
         const accessKey = decrypt(user.accessKey);
         const secretKey = decrypt(user.secretKey);
 
